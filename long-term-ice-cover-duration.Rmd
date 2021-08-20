@@ -1,0 +1,41 @@
+---
+title: "Long Term Ice Cover Duration"
+author: "Marie Rivers"
+date: "8/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(ggExtra)
+```
+
+```{r}
+meteorological_data <- read_csv(here("data", "ntl20_v6.csv"))
+ice_data <- read_csv(here("data", "ntl33_v7.csv"), na = "-999")
+
+```
+Ice duration across different lakes in teh Madison Lake Area
+```{r}
+ice_duration_graph <- ggplot(data = ice_data, aes(x = lakeid, y = ice_duration)) +
+  geom_jitter(aes(color = lakeid))
+
+ggMarginal(ice_duration_graph, type = "histogram", groupColour = TRUE, fill = "white")
+```
+Find the mean ice cover duration in Madison Lake Area by year:
+the mean is the mean of the three lakes for each year.
+```{r}
+annual_duration <- ice_data %>% 
+  group_by(year4) %>% 
+  summarise(mean_duration = mean(ice_duration)) %>% 
+  filter(mean_duration != "NA")
+
+annual_duration_graph <- ggplot(data = annual_duration, aes(x = year4, y = mean_duration)) +
+  geom_point() +
+  labs(caption = "There is wide variability in annual mean ice duration on lakes \nin the of Madison Lake Area, however there is a slightly negative \ntrend to these values")
+
+annual_duration_graph
+```
+Join the mean winter air temperatures to the mean ice cover duration data 
