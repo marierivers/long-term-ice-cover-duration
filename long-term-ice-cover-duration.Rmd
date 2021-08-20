@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(ggExtra)
+library(lubridate)
 ```
 
 ```{r}
@@ -39,3 +40,38 @@ annual_duration_graph <- ggplot(data = annual_duration, aes(x = year4, y = mean_
 annual_duration_graph
 ```
 Join the mean winter air temperatures to the mean ice cover duration data 
+```{r}
+annual_temp <- meteorological_data %>% 
+  group_by(year4) %>% 
+  summarise(mean_air_temp = mean(ave_air_temp_adjusted))
+
+annual_duration_join <- left_join(annual_duration, annual_temp, by = "year4")
+```
+Create a scatterplot of mean winter temperatures vs. mean ice duration
+```{r}
+temp_duration_graph <- ggplot(data = annual_duration_join, aes(x = mean_air_temp, y = mean_duration)) +
+  geom_point() +
+  labs(caption = "The data does not show a correlation between mean winter air temp and ice duration")
+temp_duration_graph
+```
+Explore thaw dates sice 1970
+```{r}
+ice_since_1970 <- ice_data %>% 
+  filter(year4 >= 1970) %>% 
+  mutate(ice_off = lubridate::ymd(ice_off)) %>% 
+  mutate(ice_off_day = yday(ice_off))
+
+ice_off_day_graph <- ggplot(data = ice_since_1970, aes(x = year4, y = ice_off_day)) +
+  geom_point(aes(color = lakeid)) +
+  facet_wrap(~lakeid) +
+  labs(caption = "there is no temporal trend in the day of year ice is off lake in the Madison Lake Area")
+ice_off_day_graph
+```
+scale_x_date(date_breaks = "5 years",
+               date_labels = "%Y") +
+               
+# `y` lowercase is 2 didget year, `Y` upper case is a 4 year date
+ggplot(data = lizard_obs_count, aes(x = date, y = count)) +
+  geom_line() +
+  scale_x_date(date_breaks = "3 years",
+               date_labels = "%Y")
